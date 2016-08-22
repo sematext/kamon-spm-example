@@ -35,10 +35,14 @@ object Main extends App {
 
     val random = new Random()
     val myGauge = Kamon.metrics.gauge("my-gauge")(0L)
-    myGauge.record(random.nextLong())
+    myGauge.record(1L)
+    myGauge.record(10L)
+    myGauge.record(5L)
+
 
     val myHistogram = Kamon.metrics.histogram("my-histogram")
-    myHistogram.record(random.nextLong())
+    myHistogram.record(100L)
+    myHistogram.record(10L)
 
     val myCounter = Kamon.metrics.counter("my-counter")
     myCounter.increment(random.nextInt(10))
@@ -47,7 +51,7 @@ object Main extends App {
     myMMCounter.increment(random.nextInt(50) - 25)
 
     val myTaggedHistogram = Kamon.metrics.histogram("my-tagged-histogram", tags = Map("algorithm" -> "X"))
-    myTaggedHistogram.record(random.nextLong())
+    myTaggedHistogram.record(50L)
 
     Thread.sleep(500)
     user()
