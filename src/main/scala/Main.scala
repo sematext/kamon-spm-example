@@ -7,9 +7,20 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import scala.util.Random
 
-class Worker extends Actor with ActorLogging {
+class Worker1 extends Actor with ActorLogging {
   def receive = {
-    case 'work => log.info("Working")
+    case 'work => log.info("Working[1]")
+  }
+}
+
+class Worker2 extends Actor with ActorLogging {
+  def receive = {
+    case 'work2 => log.info("Working[2]")
+  }
+}
+class Worker3 extends Actor with ActorLogging {
+  def receive = {
+    case 'work2 => log.info("Working[3]")
   }
 }
 
@@ -17,7 +28,9 @@ object Main extends App {
   Kamon.start()
 
   val system = ActorSystem()
-  val actor = system.actorOf(Props[Worker])
+  val actor = system.actorOf(Props[Worker1], name = "testActor1")
+  val actor2 = system.actorOf(Props[Worker2], name = "testActor2")
+  val actor3 = system.actorOf(Props[Worker3], name = "testActorExcluded")
 
   def user(): Unit = {
     actor ! 'work
