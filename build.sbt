@@ -13,10 +13,10 @@ javaOptions in run <++= AspectjKeys.weaverOptions in Aspectj
 fork in run := true
 
 libraryDependencies ++= Seq(
-  "io.kamon" %% "kamon-core" % "0.6.2",
-  "io.kamon" %% "kamon-spm" % "0.6.2",
-  "io.kamon" %% "kamon-akka" % "0.6.2",
-  "io.kamon" %% "kamon-system-metrics" % "0.6.2",
-  "io.kamon" %% "kamon-log-reporter" % "0.6.2",
+  "io.kamon" %% "kamon-core" % "0.6.7",
+  "io.kamon" %% "kamon-spm" % "0.6.7",
+  "io.kamon" %% "kamon-akka-2.5" % "0.6.7",
+  "io.kamon" %% "kamon-system-metrics" % "0.6.7",
+  "io.kamon" %% "kamon-log-reporter" % "0.6.7",
   "org.apache.thrift" % "libthrift" % "0.9.2"
 )
