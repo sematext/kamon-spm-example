@@ -2,10 +2,11 @@ package com.sematext.kamon.example
 
 import kamon.Kamon
 import akka.actor._
-import akka.util.Timeout
+import kamon.trace.Tracer
 
-import scala.concurrent.duration._
+import scala.concurrent.Future
 import scala.util.Random
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class Worker1 extends Actor with ActorLogging {
   def receive = {
@@ -65,6 +66,15 @@ object Main extends App {
 
     val myTaggedHistogram = Kamon.metrics.histogram("my-tagged-histogram", tags = Map("algorithm" -> "X"))
     myTaggedHistogram.record(50L)
+
+    Tracer.withNewContext("sample-trace", autoFinish = true) {
+      Future {
+        "Hello Kamon"
+      }.map(_.length)
+        .flatMap(len => Future(len.toString))
+        .map(s => Tracer.currentContext)
+        .map(s => println)
+    }
 
     Thread.sleep(500)
     user()
