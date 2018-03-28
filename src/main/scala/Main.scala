@@ -2,9 +2,14 @@ package com.sematext.kamon.example
 
 import kamon.Kamon
 import akka.actor._
-import kamon.trace.Tracer
+import akka.util.Timeout
+import kamon.context.Key
+import kamon.system.SystemMetrics
+import kamon.trace.SpanContext.SamplingDecision
+import kamon.trace.{Span, Tracer}
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.Random
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -19,63 +24,39 @@ class Worker2 extends Actor with ActorLogging {
     case 'work2 => log.info("Working[2]")
   }
 }
-class Worker3 extends Actor with ActorLogging {
-  def receive = {
-    case 'work2 => log.info("Working[3]")
-  }
-}
 
 object Main extends App {
-  Kamon.start()
+  Kamon.loadReportersFromConfig()
+  SystemMetrics.startCollecting()
 
   val system = ActorSystem()
   val actor = system.actorOf(Props[Worker1], name = "testActor1")
   val actor2 = system.actorOf(Props[Worker2], name = "testActor2")
-  val actor3 = system.actorOf(Props[Worker3], name = "testActorExcluded")
 
   def user(): Unit = {
     actor ! 'work
-
-    //Traces and custom metrics
-    val tContext = Kamon.tracer.newContext("trace1")
-    Thread.sleep(400)
-    val segment = tContext.startSegment("some-section-trace1", "business-logic", "kamon")
+    val span = Kamon.buildSpan("trace1").start()
+    val span2 = Kamon.buildSpan("trace2").start()
+    span.context().createChild(span2.context().traceID, SamplingDecision.Sample)
+    Thread.sleep(3000)
+    span2.finish()
+    span.tag("key", "value")
+    Thread.sleep(3000)
     Thread.sleep(200)
-    segment.finish()
-    tContext.finish()
-
-    val tContext2 = Kamon.tracer.newContext("trace2")
-    tContext2.finishWithError(new Exception("Big error"))
-
+    span.finish()
     val random = new Random()
-    val myGauge = Kamon.metrics.gauge("my-gauge")(0L)
-    myGauge.record(1L)
-    myGauge.record(10L)
-    myGauge.record(5L)
+    val myGauge = Kamon.gauge("my-gauge").refine("custom", "true")
+    myGauge.increment(15L)
 
-
-    val myHistogram = Kamon.metrics.histogram("my-histogram")
+    val myHistogram = Kamon.histogram("my-histogram").refine("custom", "true")
     myHistogram.record(100L)
     myHistogram.record(10L)
 
-    val myCounter = Kamon.metrics.counter("my-counter")
-    myCounter.increment(random.nextInt(10))
+    val myCounter = Kamon.counter("my-counter").refine("custom", "true")
+    myCounter.increment(random.nextInt(50000))
 
-    val myMMCounter = Kamon.metrics.minMaxCounter("my-mm-counter")
-    myMMCounter.increment(random.nextInt(50) - 25)
-
-    val myTaggedHistogram = Kamon.metrics.histogram("my-tagged-histogram", tags = Map("algorithm" -> "X"))
+    val myTaggedHistogram = Kamon.histogram("my-tagged-histogram").refine("custom", "true")
     myTaggedHistogram.record(50L)
-
-    Tracer.withNewContext("sample-trace", autoFinish = true) {
-      Future {
-        "Hello Kamon"
-      }.map(_.length)
-        .flatMap(len => Future(len.toString))
-        .map(s => Tracer.currentContext)
-        .map(s => println)
-    }
-
     Thread.sleep(500)
     user()
   }
