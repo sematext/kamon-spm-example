@@ -26,8 +26,11 @@ class Worker3 extends Actor with ActorLogging {
 }
 
 object Main extends App {
-  SystemMetrics.startCollecting()
+
+  // Load reports definitions from application.conf
   Kamon.loadReportersFromConfig()
+  // Start SystemMetrics collection
+  SystemMetrics.startCollecting()
 
   val system = ActorSystem()
   val actor = system.actorOf(Props[Worker1], name = "testActor1")
