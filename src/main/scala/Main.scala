@@ -2,9 +2,8 @@ import java.time.Instant
 
 import akka.actor._
 import kamon.Kamon
-import kamon.context.{Context, Key}
+import kamon.context.Key
 import kamon.system.SystemMetrics
-import kamon.trace.Tracer
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
