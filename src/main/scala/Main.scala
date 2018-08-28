@@ -1,7 +1,12 @@
+import java.time.Instant
+
 import akka.actor._
 import kamon.Kamon
+import kamon.context.{Context, Key}
 import kamon.system.SystemMetrics
+import kamon.trace.Tracer
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 class Worker1 extends Actor with ActorLogging {
@@ -36,10 +41,13 @@ object Main extends App {
     actor ! 'work
 
     //Traces and custom metrics
+    val span = Kamon.buildSpan("span-with-marks").start()
+    span.mark("message.dequeued").mark(at = Instant.now(), "This could be free text")
+    span.finish()
 
-    val tContext1 = Kamon.buildSpan("trace2").start()
-    tContext1.addError("Big error")
-    tContext1.finish()
+    val span2 = Kamon.buildSpan("trace2").start()
+    span2.addError("Big error")
+    span2.finish()
 
     val random = new Random()
     val myGauge = Kamon.gauge("my-gauge")
@@ -61,6 +69,19 @@ object Main extends App {
     val myTaggedHistogram = Kamon.histogram("my-tagged-histogram");
     myTaggedHistogram.refine(Map("algorithm" -> "X"));
     myTaggedHistogram.record(50L)
+
+    val userID = Key.local[Option[String]]("user-id", None)
+
+    implicit val ec = ExecutionContext.Implicits.global
+
+    Kamon.withContextKey(userID, Some("1234")) {
+      Future {
+        "Hello Kamon"
+      }.map(_.length)
+        .flatMap(len => Future(len.toString))
+        .map(s => Kamon.currentContext().get(userID))
+        .map(println)
+    }
 
     Thread.sleep(500)
     user()
