@@ -1,6 +1,6 @@
 # kamon-spm-example
 
-Example App to demonsrate how to configure Kamon to use [SPM backend](http://kamon.io/documentation/kamon-sematext-spm/0.6.6/overview/) in order to monitor Akka/Play applications with [SPM](http://sematext.com/spm).
+Example App to demonsrate how to configure Kamon to use [SPM backend](https://kamon.io/documentation/1.x/reporters/sematext/) in order to monitor Akka/Play applications with [SPM](http://sematext.com/spm).
 
 
 ### Specify your SPM app token:
