@@ -1,6 +1,7 @@
 import java.time.Instant
 
 import akka.actor._
+import akka.routing.RoundRobinPool
 import kamon.Kamon
 import kamon.context.Key
 import kamon.system.SystemMetrics
@@ -33,7 +34,7 @@ object Main extends App {
   SystemMetrics.startCollecting()
 
   val system = ActorSystem()
-  val actor = system.actorOf(Props[Worker1], name = "testActor1")
+  val actor = system.actorOf(RoundRobinPool(5).props(Props[Worker1]), name = "testActor1")
   val actor2 = system.actorOf(Props[Worker2], name = "testActor2")
   val actor3 = system.actorOf(Props[Worker3], name = "testActorExcluded")
 
